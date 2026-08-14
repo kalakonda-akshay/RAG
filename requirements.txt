@@ -1,0 +1,9 @@
+streamlit
+chromadb
+pymupdf
+python-docx
+pytesseract
+pillow
+faster-whisper
+ollama
+langchain-text-splitters
