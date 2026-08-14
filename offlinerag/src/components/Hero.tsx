@@ -65,8 +65,9 @@ export default function Hero() {
             animate="visible"
             className="mt-6 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg"
           >
-            A completely offline RAG assistant for asking questions about
-            your documents — powered locally on your own machine.
+            A completely offline multimodal RAG assistant for asking questions
+            across your PDFs (native & scanned), Word docs, PowerPoint slides,
+            images, and audio recordings — powered 100% locally on your machine.
           </motion.p>
 
           <motion.div

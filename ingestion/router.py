@@ -13,11 +13,13 @@ if _parent_dir not in sys.path:
 try:
     from ingestion.pdf_parser import extract_text_from_pdf
     from ingestion.docx_parser import extract_text_from_docx
+    from ingestion.pptx_parser import extract_text_from_pptx
     from ingestion.image_parser import extract_text_from_image
     from ingestion.audio_parser import extract_text_from_audio
 except ImportError:
     from pdf_parser import extract_text_from_pdf
     from docx_parser import extract_text_from_docx
+    from pptx_parser import extract_text_from_pptx
     from image_parser import extract_text_from_image
     from audio_parser import extract_text_from_audio
 
@@ -25,6 +27,8 @@ except ImportError:
 EXT_MAP = {
     ".pdf": extract_text_from_pdf,
     ".docx": extract_text_from_docx,
+    ".pptx": extract_text_from_pptx,
+    ".ppt": extract_text_from_pptx,
     ".png": extract_text_from_image,
     ".jpg": extract_text_from_image,
     ".jpeg": extract_text_from_image,
