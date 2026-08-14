@@ -7,3 +7,4 @@ pillow
 faster-whisper
 ollama
 langchain-text-splitters
+requests
