@@ -2,10 +2,18 @@
 First-run setup and dependency verification for Ollama and required models.
 """
 import os
+import sys
 import shutil
 import subprocess
 import time
 import requests
+
+# Ensure console output uses safe encoding
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 
 def get_ollama_executable() -> str | None:
@@ -84,6 +92,8 @@ def is_model_pulled(model_name: str) -> bool:
             [ollama_cmd, "list"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         return model_name in result.stdout
@@ -94,6 +104,7 @@ def is_model_pulled(model_name: str) -> bool:
 def pull_model(model_name: str, progress_callback=None) -> None:
     """
     Runs 'ollama pull <model_name>' streaming output line-by-line and invoking progress_callback.
+    Uses UTF-8 encoding with character replacement to prevent Windows cp1252 decoding crashes.
     """
     ollama_cmd = get_ollama_executable() or "ollama"
     process = subprocess.Popen(
@@ -101,6 +112,8 @@ def pull_model(model_name: str, progress_callback=None) -> None:
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         bufsize=1,
         universal_newlines=True,
     )

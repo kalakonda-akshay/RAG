@@ -8,6 +8,18 @@ import threading
 import time
 import streamlit.web.cli as stcli
 
+# Ensure console output uses safe encoding on Windows
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Ensure root package is in sys.path
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _parent_dir = os.path.dirname(_current_dir)
@@ -49,7 +61,10 @@ def main():
     print()
 
     def console_progress(msg: str):
-        print(f"[SETUP] {msg}")
+        try:
+            print(f"[SETUP] {msg}")
+        except Exception:
+            pass
 
     try:
         ensure_ready(progress_callback=console_progress)
