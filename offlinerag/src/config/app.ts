@@ -21,7 +21,7 @@ export const APP_CONFIG = {
     return `${this.githubUrl}/issues`;
   },
 
-  downloadUrl: "https://github.com/kalakonda-akshay/RAG/releases/download/v1.0.0/OfflineRAGAssistant_Setup.exe",
+  downloadUrl: "https://github.com/kalakonda-akshay/RAG/releases/download/v1.0.0/OfflineRAG_v1.0.0.zip",
 
   platforms: ["Windows 10", "Windows 11"],
 } as const;
