@@ -8,9 +8,8 @@ export const APP_CONFIG = {
   tagline: "Private knowledge. Local intelligence.",
   version: "1.0.0",
 
-  // REPLACE: your GitHub username/org and repo name
-  githubUsername: "YOUR_USERNAME",
-  githubRepo: "OfflineRAG",
+  githubUsername: "kalakonda-akshay",
+  githubRepo: "RAG",
 
   get githubUrl() {
     return `https://github.com/${this.githubUsername}/${this.githubRepo}`;
@@ -22,9 +21,7 @@ export const APP_CONFIG = {
     return `${this.githubUrl}/issues`;
   },
 
-  // REPLACE: once a release exists, point this straight at the .exe asset,
-  // e.g. `${githubUrl}/releases/download/v1.0.0/OfflineRAG-Setup-1.0.0.exe`
-  downloadUrl: "#download",
+  downloadUrl: "https://github.com/kalakonda-akshay/RAG/releases/download/v1.0.0/OfflineRAGAssistant_Setup.exe",
 
   platforms: ["Windows 10", "Windows 11"],
 } as const;
