@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/app.py', '.'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/ingestion', 'ingestion'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/core', 'core'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/launcher', 'launcher'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/data', 'data'), ('C:/Users/Akshay/AppData/Local/Python/pythoncore-3.14-64/Lib/site-packages/streamlit', 'streamlit')]
+datas = [('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/app.py', '.'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/ingestion', 'ingestion'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/core', 'core'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/launcher', 'launcher'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/data', 'data'), ('C:/Users/Akshay/OneDrive/Desktop/evaluthon final/offline-rag/.streamlit', '.streamlit'), ('C:/Users/Akshay/AppData/Local/Python/pythoncore-3.14-64/Lib/site-packages/streamlit', 'streamlit')]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('streamlit')
@@ -13,6 +13,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('pymupdf')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('docx')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('pptx')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('langchain_text_splitters')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]

@@ -214,9 +214,9 @@ with st.sidebar:
 
     uploaded_files = st.file_uploader(
         "Upload files",
-        type=["pdf", "docx", "png", "jpg", "jpeg", "wav", "mp3", "m4a"],
+        type=["pdf", "docx", "pptx", "ppt", "png", "jpg", "jpeg", "wav", "mp3", "m4a"],
         accept_multiple_files=True,
-        help="Supported formats: PDF, DOCX, Images (OCR), Audio (Whisper)",
+        help="Supported formats: PDF (native & scanned), Word, PowerPoint (.pptx), Images (OCR), Audio (Whisper)",
     )
 
     # Show file details before processing
@@ -349,17 +349,17 @@ with col_center:
         <span>🧠</span> Offline Multimodal RAG Assistant
     </div>
     <div class="sub-header-text">
-        Ask questions across your PDFs, Word docs, images, and audio — fully offline, with cited sources.
+        Ask questions across your PDFs (native & scanned), Word docs, PowerPoints, images, and audio — fully offline, with cited sources.
     </div>
     <div class="header-accent-line"></div>
     """, unsafe_allow_html=True)
 
     with st.expander("ℹ️ How it works", expanded=False):
         st.markdown("""
-        - **Local Multimodal Ingestion**: Files are processed entirely on your machine without cloud services (PDFs via PyMuPDF, Word via python-docx, Images via Tesseract OCR, and Audio via faster-whisper).
+        - **Local Multimodal Ingestion**: Files are processed entirely on your machine without cloud services (PDFs via PyMuPDF with OCR fallback for scanned pages, Word via python-docx, Presentations via python-pptx, Images via Tesseract OCR, and Audio via faster-whisper).
         - **Semantic Chunking & Embedding**: Content is split into chunks and embedded locally using Ollama (`nomic-embed-text`).
         - **Offline Vector Search**: High-dimensional vector search runs locally on ChromaDB.
-        - **Grounded Answer Generation**: Local LLM (`llama3.2:3b`) synthesizes answers with source citations (`[1]`, `[2]`) referencing the exact page or audio timestamp.
+        - **Grounded Answer Generation**: Local LLM (`llama3.2:3b`) synthesizes answers with source citations (`[1]`, `[2]`) referencing the exact page, slide, or audio timestamp.
         """)
 
 # 6. Empty State (when no chat history and no files)

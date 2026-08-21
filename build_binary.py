@@ -29,6 +29,7 @@ cmd = [
     "--add-data", f"{os.path.join(PROJECT_DIR, 'core')};core",
     "--add-data", f"{os.path.join(PROJECT_DIR, 'launcher')};launcher",
     "--add-data", f"{os.path.join(PROJECT_DIR, 'data')};data",
+    "--add-data", f"{os.path.join(PROJECT_DIR, '.streamlit')};.streamlit",
     "--add-data", f"{STREAMLIT_DIR};streamlit",
     # Collect metadata and submodules
     "--collect-all", "streamlit",
@@ -36,6 +37,7 @@ cmd = [
     "--collect-all", "faster_whisper",
     "--collect-all", "pymupdf",
     "--collect-all", "docx",
+    "--collect-all", "pptx",
     "--collect-all", "langchain_text_splitters",
     "--collect-all", "ollama",
     "--collect-all", "pytesseract",
@@ -47,8 +49,8 @@ cmd = [
 print("Executing PyInstaller command...")
 result = subprocess.run(cmd, cwd=PROJECT_DIR)
 if result.returncode == 0:
-    print("\n✓ PyInstaller build succeeded!")
+    print("\n[SUCCESS] PyInstaller build succeeded!")
     print(f"Output directory: {os.path.join(PROJECT_DIR, 'dist', 'OfflineRAGAssistant')}")
 else:
-    print(f"\n❌ PyInstaller build failed with exit code {result.returncode}")
+    print(f"\n[ERROR] PyInstaller build failed with exit code {result.returncode}")
     sys.exit(result.returncode)

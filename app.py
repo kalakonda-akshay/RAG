@@ -1,5 +1,5 @@
 """
-Streamlit entrypoint for the Offline Multimodal RAG Assistant.
+Streamlit entrypoint for the Offline Multimodal RAG Assistant (Upgraded Edition).
 """
 import os
 import streamlit as st
@@ -17,20 +17,31 @@ st.set_page_config(
     layout="wide",
 )
 
-# 2. Startup Check — Ollama Health
-def is_ollama_running() -> bool:
-    try:
-        ollama.list()
-        return True
-    except Exception:
-        return False
 
-if not is_ollama_running():
+# 2. Startup Check — Ollama Health & Model List
+def get_installed_models() -> list[str]:
+    try:
+        models_data = ollama.list()
+        model_names = []
+        for m in models_data.get("models", []):
+            if isinstance(m, dict):
+                name = m.get("name", "")
+            else:
+                name = getattr(m, "model", str(m))
+            if name:
+                model_names.append(name)
+        return model_names if model_names else ["llama3.2:3b"]
+    except Exception:
+        return []
+
+installed_models = get_installed_models()
+if not installed_models:
     st.error("⚠️ Ollama is not running. Start it with: `ollama serve`")
-    st.info("Make sure the local Ollama server is active and the required models are pulled (`llama3.2:3b`, `nomic-embed-text`).")
+    st.info("Make sure the local Ollama server is active and required models are pulled (`llama3.2:3b`, `nomic-embed-text`).")
     st.stop()
 
-# 3. Custom Styling & Theme Injection
+
+# 3. Custom Theme & Styling Injection
 st.markdown("""
 <style>
 /* Main container max-width & spacing */
@@ -181,6 +192,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "indexed_files" not in st.session_state:
     st.session_state.indexed_files = []
+if "current_workspace" not in st.session_state:
+    st.session_state.current_workspace = "documents"
 
 
 def render_sources(sources: list[dict]):
@@ -209,17 +222,40 @@ def render_sources(sources: list[dict]):
 
 # 4. Sidebar — Ingestion & Controls
 with st.sidebar:
-    st.title("📂 Document Ingestion")
-    st.caption("Upload local multimodal documents into your offline vector store.")
+    st.title("📂 Settings & Ingestion")
 
-    uploaded_files = st.file_uploader(
-        "Upload files",
-        type=["pdf", "docx", "pptx", "ppt", "png", "jpg", "jpeg", "wav", "mp3", "m4a"],
-        accept_multiple_files=True,
-        help="Supported formats: PDF (native & scanned), Word, PowerPoint (.pptx), Images (OCR), Audio (Whisper)",
+    # Model Selector
+    st.subheader("🤖 Local Model")
+    selected_model = st.selectbox(
+        "Choose LLM model:",
+        options=installed_models,
+        index=0 if "llama3.2:3b" not in installed_models else installed_models.index("llama3.2:3b"),
+        help="Select any local model running in your Ollama library.",
     )
 
-    # Show file details before processing
+    # Workspace Collection Selector
+    st.subheader("🗂️ Workspace Collection")
+    workspace_choice = st.selectbox(
+        "Active collection:",
+        options=["documents", "finance", "research", "engineering"],
+        index=0,
+        help="Separate your files into distinct project collections.",
+    )
+    st.session_state.current_workspace = workspace_choice
+
+    st.divider()
+
+    st.subheader("📥 Upload Multimodal Files")
+    uploaded_files = st.file_uploader(
+        "Upload files",
+        type=[
+            "pdf", "docx", "pptx", "ppt", "png", "jpg", "jpeg", "wav", "mp3", "m4a",
+            "csv", "xlsx", "xls", "mp4", "mkv", "mov", "avi", "txt", "md", "py", "js", "json", "html"
+        ],
+        accept_multiple_files=True,
+        help="Supported: PDFs, Word, PowerPoint, Excel/CSV, Videos, Audio, Images (OCR), Text/Code",
+    )
+
     if uploaded_files:
         st.markdown("**Selected files:**")
         for f in uploaded_files:
@@ -242,15 +278,15 @@ with st.sidebar:
 
                         raw_docs = process_file(file_path)
                         if not raw_docs:
-                            st.warning(f"No text could be extracted from {file.name} — it may be a scanned/empty file.")
+                            st.warning(f"No text could be extracted from {file.name}.")
                             continue
 
                         chunks = chunk_documents(raw_docs)
                         if not chunks:
-                            st.warning(f"No text could be extracted from {file.name} — it may be a scanned/empty file.")
+                            st.warning(f"No text could be extracted from {file.name}.")
                             continue
 
-                        add_chunks(chunks)
+                        add_chunks(chunks, collection_name=st.session_state.current_workspace)
 
                         if file.name not in st.session_state.indexed_files:
                             st.session_state.indexed_files.append(file.name)
@@ -274,7 +310,7 @@ with st.sidebar:
     if st.button(
         "Load Demo Data",
         disabled=not has_demo_files,
-        help="Loads sample documents from data/demo/" if has_demo_files else "No demo files found in data/demo/",
+        help="Loads sample documents from data/demo/",
         use_container_width=True,
     ):
         demo_total = len(demo_files)
@@ -285,15 +321,15 @@ with st.sidebar:
                 with st.spinner(f"Processing demo file: {demo_name}..."):
                     raw_docs = process_file(demo_path)
                     if not raw_docs:
-                        st.warning(f"No text could be extracted from {demo_name} — it may be a scanned/empty file.")
+                        st.warning(f"No text could be extracted from {demo_name}.")
                         continue
 
                     chunks = chunk_documents(raw_docs)
                     if not chunks:
-                        st.warning(f"No text could be extracted from {demo_name} — it may be a scanned/empty file.")
+                        st.warning(f"No text could be extracted from {demo_name}.")
                         continue
 
-                    add_chunks(chunks)
+                    add_chunks(chunks, collection_name=st.session_state.current_workspace)
 
                     if demo_name not in st.session_state.indexed_files:
                         st.session_state.indexed_files.append(demo_name)
@@ -320,6 +356,25 @@ with st.sidebar:
 
     st.divider()
 
+    # Chat History Export
+    st.subheader("💾 Export Report")
+    if st.session_state.messages:
+        report_md = "# Offline RAG Chat Report\n\n"
+        for m in st.session_state.messages:
+            role = "User" if m["role"] == "user" else "Assistant"
+            report_md += f"### {role}\n{m['content']}\n\n"
+        st.download_button(
+            "Download Chat Report (.md)",
+            data=report_md,
+            file_name="OfflineRAG_Chat_Report.md",
+            mime="text/markdown",
+            use_container_width=True,
+        )
+    else:
+        st.caption("Chat history empty — start typing to generate a report.")
+
+    st.divider()
+
     # Clear Index & Reset
     st.subheader("⚙️ Reset Index")
     confirm_reset = st.checkbox(
@@ -330,7 +385,7 @@ with st.sidebar:
         try:
             client = _get_client()
             try:
-                client.delete_collection("documents")
+                client.delete_collection(st.session_state.current_workspace)
             except Exception:
                 pass
             st.session_state.messages = []
@@ -344,22 +399,22 @@ with st.sidebar:
 # 5. Main Area — Header & How It Works Container
 col_l, col_center, col_r = st.columns([0.02, 0.96, 0.02])
 with col_center:
-    st.markdown("""
+    st.markdown(f"""
     <div class="gradient-header">
         <span>🧠</span> Offline Multimodal RAG Assistant
     </div>
     <div class="sub-header-text">
-        Ask questions across your PDFs (native & scanned), Word docs, PowerPoints, images, and audio — fully offline, with cited sources.
+        Ask questions across PDFs (native & scanned), Excel/CSV, PowerPoints, Videos, Audio, Images, and Code — 100% offline.
     </div>
     <div class="header-accent-line"></div>
     """, unsafe_allow_html=True)
 
     with st.expander("ℹ️ How it works", expanded=False):
-        st.markdown("""
-        - **Local Multimodal Ingestion**: Files are processed entirely on your machine without cloud services (PDFs via PyMuPDF with OCR fallback for scanned pages, Word via python-docx, Presentations via python-pptx, Images via Tesseract OCR, and Audio via faster-whisper).
-        - **Semantic Chunking & Embedding**: Content is split into chunks and embedded locally using Ollama (`nomic-embed-text`).
-        - **Offline Vector Search**: High-dimensional vector search runs locally on ChromaDB.
-        - **Grounded Answer Generation**: Local LLM (`llama3.2:3b`) synthesizes answers with source citations (`[1]`, `[2]`) referencing the exact page, slide, or audio timestamp.
+        st.markdown(f"""
+        - **Local Multimodal Ingestion**: Supports PDFs (native & scanned OCR), Word, PowerPoint, Excel/CSV, Videos (audio extraction), Audio (Whisper), Images (Tesseract OCR), and Code/Text.
+        - **Hybrid Search Engine**: Combines BM25 Keyword Matching + Dense Vector Cosine Similarity (Reciprocal Rank Fusion) on ChromaDB.
+        - **Multi-Turn Chat Memory**: Remembers recent conversation history for natural follow-up questions.
+        - **Active Model & Workspace**: Running `{selected_model}` in workspace `{st.session_state.current_workspace}`.
         """)
 
 # 6. Empty State (when no chat history and no files)
@@ -369,7 +424,7 @@ if not st.session_state.messages and not st.session_state.indexed_files:
         <div class="empty-state-icon">📂</div>
         <div class="empty-state-title">Upload a file to get started</div>
         <div class="empty-state-desc">
-            Drag & drop PDFs, Word documents, images, or audio files in the sidebar to build your private, local knowledge base.
+            Drag & drop PDFs, Excel sheets, PowerPoints, Video/Audio files, or Code in the sidebar to build your private local knowledge base.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -399,7 +454,12 @@ if prompt := st.chat_input("Ask a question about your documents..."):
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
-                    result = generate_answer(clean_prompt)
+                    result = generate_answer(
+                        clean_prompt,
+                        model=selected_model,
+                        collection_name=st.session_state.current_workspace,
+                        chat_history=st.session_state.messages,
+                    )
                     answer_text = result.get("answer", "No response generated.")
                     sources = result.get("sources", [])
 

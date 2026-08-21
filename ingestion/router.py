@@ -1,10 +1,9 @@
 """
-Detects file type and routes to the appropriate parser.
+Detects file type and routes to the appropriate parser for multimodal document processing.
 """
 import os
 import sys
 
-# Ensure root directory is accessible when router.py is run directly
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _parent_dir = os.path.dirname(_current_dir)
 if _parent_dir not in sys.path:
@@ -16,12 +15,18 @@ try:
     from ingestion.pptx_parser import extract_text_from_pptx
     from ingestion.image_parser import extract_text_from_image
     from ingestion.audio_parser import extract_text_from_audio
+    from ingestion.excel_parser import extract_text_from_excel
+    from ingestion.video_parser import extract_text_from_video
+    from ingestion.text_parser import extract_text_from_textfile
 except ImportError:
     from pdf_parser import extract_text_from_pdf
     from docx_parser import extract_text_from_docx
     from pptx_parser import extract_text_from_pptx
     from image_parser import extract_text_from_image
     from audio_parser import extract_text_from_audio
+    from excel_parser import extract_text_from_excel
+    from video_parser import extract_text_from_video
+    from text_parser import extract_text_from_textfile
 
 
 EXT_MAP = {
@@ -35,6 +40,21 @@ EXT_MAP = {
     ".wav": extract_text_from_audio,
     ".mp3": extract_text_from_audio,
     ".m4a": extract_text_from_audio,
+    ".csv": extract_text_from_excel,
+    ".xlsx": extract_text_from_excel,
+    ".xls": extract_text_from_excel,
+    ".mp4": extract_text_from_video,
+    ".mkv": extract_text_from_video,
+    ".mov": extract_text_from_video,
+    ".avi": extract_text_from_video,
+    ".txt": extract_text_from_textfile,
+    ".md": extract_text_from_textfile,
+    ".py": extract_text_from_textfile,
+    ".js": extract_text_from_textfile,
+    ".json": extract_text_from_textfile,
+    ".html": extract_text_from_textfile,
+    ".xml": extract_text_from_textfile,
+    ".sql": extract_text_from_textfile,
 }
 
 

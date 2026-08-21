@@ -1,21 +1,21 @@
 """
-ChromaDB vector store wrapper for persistent offline indexing and similarity search.
+ChromaDB vector store wrapper with Hybrid BM25 Keyword + Dense Vector Search.
 """
 import os
 import sys
 import chromadb
+from rank_bm25 import BM25Okapi
 
-# Ensure project root is on sys.path for direct script execution
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _parent_dir = os.path.dirname(_current_dir)
 if _parent_dir not in sys.path:
     sys.path.insert(0, _parent_dir)
 
 try:
-    from core.embedder import embed_text, embed_batch
+    from core.embedder import embed_text
     from core.chunker import chunk_documents
 except ImportError:
-    from embedder import embed_text, embed_batch
+    from embedder import embed_text
     from chunker import chunk_documents
 
 
@@ -56,7 +56,7 @@ def add_chunks(chunks: list[dict], collection_name: str = "documents") -> None:
     for chunk in chunks:
         chunk_text = chunk["text"]
         chunk_id = str(chunk["chunk_id"])
-        
+
         ids.append(chunk_id)
         documents.append(chunk_text)
         metadatas.append({
@@ -78,8 +78,8 @@ def query_collection(
     query_text: str, top_k: int = 5, collection_name: str = "documents"
 ) -> list[dict]:
     """
-    Embeds query_text, queries ChromaDB for top_k nearest chunks, and returns formatted results.
-    Returns: list of {"text": ..., "source": ..., "page": ..., "type": ..., "distance": ...}
+    Performs Hybrid Search (Dense Vector Cosine + Sparse BM25 Keyword Scoring)
+    to achieve maximum precision on technical terms, acronyms, and semantic queries.
     """
     collection = get_collection(collection_name)
     count = collection.count()
@@ -87,57 +87,55 @@ def query_collection(
         return []
 
     query_vector = embed_text(query_text)
-    actual_k = min(top_k, count)
+
+    # Retrieve candidate pool for hybrid reranking
+    candidate_k = min(top_k * 3, count)
     results = collection.query(
         query_embeddings=[query_vector],
-        n_results=actual_k,
+        n_results=candidate_k,
         include=["documents", "metadatas", "distances"],
     )
 
-    formatted_results = []
-    if results and "documents" in results and results["documents"]:
-        docs = results["documents"][0]
-        metas = results.get("metadatas", [[]])[0]
-        distances = results.get("distances", [[]])[0]
+    if not results or "documents" not in results or not results["documents"]:
+        return []
 
-        for i in range(len(docs)):
-            doc_text = docs[i]
-            meta = metas[i] if i < len(metas) and metas[i] is not None else {}
-            dist = distances[i] if i < len(distances) else 0.0
+    docs = results["documents"][0]
+    metas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
 
-            formatted_results.append({
-                "text": doc_text,
-                "source": meta.get("source", ""),
-                "page": meta.get("page", ""),
-                "type": meta.get("type", ""),
-                "distance": dist,
-            })
+    # Initialize BM25 over the candidate pool
+    tokenized_corpus = [doc.lower().split() for doc in docs]
+    bm25 = BM25Okapi(tokenized_corpus)
+    tokenized_query = query_text.lower().split()
+    bm25_scores = bm25.get_scores(tokenized_query)
 
-    return formatted_results
+    # Normalize scores and perform Reciprocal Rank Fusion (RRF)
+    hybrid_candidates = []
+    for i in range(len(docs)):
+        vec_rank = i + 1
+        bm25_score = bm25_scores[i]
+        
+        # RRF formula: Score = 1 / (60 + vector_rank) + 1 / (60 + bm25_rank)
+        hybrid_candidates.append({
+            "text": docs[i],
+            "source": metas[i].get("source", "") if i < len(metas) and metas[i] else "",
+            "page": metas[i].get("page", "") if i < len(metas) and metas[i] else "",
+            "type": metas[i].get("type", "") if i < len(metas) and metas[i] else "",
+            "distance": distances[i] if i < len(distances) else 0.0,
+            "bm25_score": bm25_score,
+            "index": i,
+        })
 
+    # Sort candidates by BM25 score descending to calculate rank
+    bm25_sorted = sorted(enumerate(hybrid_candidates), key=lambda x: x[1]["bm25_score"], reverse=True)
+    bm25_ranks = {item[0]: rank + 1 for rank, item in enumerate(bm25_sorted)}
 
-if __name__ == "__main__":
-    from ingestion.router import process_file
+    for idx, item in enumerate(hybrid_candidates):
+        vec_rank = idx + 1
+        bm25_rank = bm25_ranks[idx]
+        rrf_score = (1.0 / (60.0 + vec_rank)) + (1.0 / (60.0 + bm25_rank))
+        item["hybrid_score"] = rrf_score
 
-    if len(sys.argv) < 2:
-        print("Usage: python core/vectorstore.py <path/to/file>")
-        sys.exit(1)
-
-    input_file = sys.argv[1]
-    print(f"Processing '{input_file}'...")
-    raw_docs = process_file(input_file)
-    print(f"Extracted {len(raw_docs)} document sections.")
-
-    chunked = chunk_documents(raw_docs)
-    print(f"Created {len(chunked)} chunks.")
-
-    print("Adding chunks to vector store...")
-    add_chunks(chunked)
-    print("Chunks added successfully.")
-
-    print("\nQuerying collection with 'test query'...")
-    search_results = query_collection("test query", top_k=3)
-    print(f"Found {len(search_results)} results:")
-    for idx, res in enumerate(search_results, 1):
-        print(f"\n[{idx}] Source: {res['source']} (Page/Time: {res['page']}, Type: {res['type']}, Distance: {res['distance']:.4f})")
-        print(f"    Text: {res['text']}")
+    # Sort final top_k by hybrid score descending
+    final_sorted = sorted(hybrid_candidates, key=lambda x: x["hybrid_score"], reverse=True)[:top_k]
+    return final_sorted
