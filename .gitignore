@@ -9,6 +9,11 @@ data/uploads/*
 data/chroma_db/*
 !data/chroma_db/.gitkeep
 
+# PyInstaller builds
+dist/
+build/
+*.spec
+
 # Environments & OS
 .env
 .venv/
