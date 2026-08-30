@@ -9,7 +9,7 @@ export const APP_CONFIG = {
   version: "1.0.0",
 
   githubUsername: "kalakonda-akshay",
-  githubRepo: "club_trial",
+  githubRepo: "RAG",
 
   get githubUrl() {
     return `https://github.com/${this.githubUsername}/${this.githubRepo}`;
@@ -21,7 +21,7 @@ export const APP_CONFIG = {
     return `${this.githubUrl}/issues`;
   },
 
-  downloadUrl: "https://github.com/kalakonda-akshay/club_trial/releases/download/v1.0.0/OfflineRAGAssistant_Setup.zip",
+  downloadUrl: "https://github.com/kalakonda-akshay/RAG/releases/latest/download/OfflineRAGAssistant_Setup.zip",
 
   platforms: ["Windows 10", "Windows 11"],
 } as const;
