@@ -4,12 +4,12 @@
 // nothing is hardcoded elsewhere.
 // ─────────────────────────────────────────────────────────────
 export const APP_CONFIG = {
-  name: "OfflineRAG",
-  tagline: "Private knowledge. Local intelligence.",
+  name: "Orbit",
+  tagline: "Offline Multimodal RAG Assistant",
   version: "1.0.0",
 
   githubUsername: "kalakonda-akshay",
-  githubRepo: "RAG",
+  githubRepo: "club_trial",
 
   get githubUrl() {
     return `https://github.com/${this.githubUsername}/${this.githubRepo}`;
@@ -21,7 +21,7 @@ export const APP_CONFIG = {
     return `${this.githubUrl}/issues`;
   },
 
-  downloadUrl: "https://github.com/kalakonda-akshay/RAG/releases/download/V1.0.0/OfflineRAGAssistant_Setup.zip",
+  downloadUrl: "https://github.com/kalakonda-akshay/club_trial/releases/download/v1.0.0/OfflineRAGAssistant_Setup.zip",
 
   platforms: ["Windows 10", "Windows 11"],
 } as const;

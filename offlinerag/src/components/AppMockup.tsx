@@ -24,7 +24,7 @@ export default function AppMockup() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#4b5162]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#4b5162]" />
           <span className="ml-3 font-mono text-[11px] text-ink-faint">
-            OfflineRAG — local session
+            Orbit — local session
           </span>
         </div>
 

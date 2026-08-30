@@ -2,7 +2,19 @@
 Handles PowerPoint PPTX slide text extraction using python-pptx.
 """
 import os
-import pptx
+import sys
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+try:
+    import pptx
+except ImportError:
+    pptx = None
 
 
 def extract_text_from_pptx(file_path: str) -> list[dict]:
@@ -13,6 +25,9 @@ def extract_text_from_pptx(file_path: str) -> list[dict]:
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
+
+    if pptx is None:
+        raise RuntimeError("python-pptx library is not available. Please install python-pptx.")
 
     filename = os.path.basename(file_path)
     prs = pptx.Presentation(file_path)

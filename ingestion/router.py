@@ -6,6 +6,8 @@ import sys
 
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
 if _parent_dir not in sys.path:
     sys.path.insert(0, _parent_dir)
 
@@ -37,6 +39,10 @@ EXT_MAP = {
     ".png": extract_text_from_image,
     ".jpg": extract_text_from_image,
     ".jpeg": extract_text_from_image,
+    ".webp": extract_text_from_image,
+    ".bmp": extract_text_from_image,
+    ".tiff": extract_text_from_image,
+    ".gif": extract_text_from_image,
     ".wav": extract_text_from_audio,
     ".mp3": extract_text_from_audio,
     ".m4a": extract_text_from_audio,

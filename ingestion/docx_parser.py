@@ -2,7 +2,19 @@
 Handles DOCX text extraction using python-docx.
 """
 import os
-import docx
+import sys
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+try:
+    import docx
+except ImportError:
+    docx = None
 
 
 def extract_text_from_docx(file_path: str) -> list[dict]:
@@ -12,6 +24,9 @@ def extract_text_from_docx(file_path: str) -> list[dict]:
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
+
+    if docx is None:
+        raise RuntimeError("python-docx library is not available. Please install python-docx.")
 
     filename = os.path.basename(file_path)
     doc = docx.Document(file_path)
@@ -28,7 +43,7 @@ def extract_text_from_docx(file_path: str) -> list[dict]:
     for para in paragraphs:
         words = para.split()
         word_count = len(words)
-        
+
         current_chunk_paragraphs.append(para)
         current_word_count += word_count
 

@@ -2,7 +2,19 @@
 Handles Excel (.xlsx, .xls) and CSV (.csv) parsing into structured markdown tables.
 """
 import os
-import pandas as pd
+import sys
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 def extract_text_from_excel(file_path: str) -> list[dict]:
@@ -13,6 +25,9 @@ def extract_text_from_excel(file_path: str) -> list[dict]:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
+    if pd is None:
+        raise RuntimeError("pandas library is not available. Please install pandas.")
+
     filename = os.path.basename(file_path)
     _, ext = os.path.splitext(file_path)
     ext_lower = ext.lower()
@@ -22,7 +37,6 @@ def extract_text_from_excel(file_path: str) -> list[dict]:
         try:
             df = pd.read_csv(file_path)
             if not df.empty:
-                # Limit row output if extremely large, convert to markdown string
                 md_table = df.head(500).to_markdown(index=False)
                 results.append({
                     "text": f"CSV Data Table ({len(df)} rows, {len(df.columns)} columns):\n\n{md_table}",
@@ -30,8 +44,7 @@ def extract_text_from_excel(file_path: str) -> list[dict]:
                     "page": "Sheet 1",
                     "type": "csv",
                 })
-        except Exception as e:
-            # Fallback to plain text read if CSV parsing fails
+        except Exception:
             with open(file_path, "r", encoding="utf-8", errors="replace") as f:
                 content = f.read().strip()
                 if content:

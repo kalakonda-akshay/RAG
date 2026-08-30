@@ -42,6 +42,13 @@ cmd = [
     "--collect-all", "ollama",
     "--collect-all", "pytesseract",
     "--collect-all", "PIL",
+    "--collect-all", "imageio_ffmpeg",
+    "--collect-all", "pyttsx3",
+    "--collect-all", "bs4",
+    "--collect-all", "psutil",
+    "--collect-all", "requests",
+    "--collect-all", "openpyxl",
+    "--collect-all", "rank_bm25",
     # Entry point
     os.path.join(PROJECT_DIR, "launcher", "run_app.py")
 ]

@@ -1,3 +1,3 @@
 """
-Ingestion package for parsing multimodal document inputs.
+Ingestion package for multimodal document processing.
 """

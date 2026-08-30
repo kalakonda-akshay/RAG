@@ -104,7 +104,6 @@ def is_model_pulled(model_name: str) -> bool:
 def pull_model(model_name: str, progress_callback=None) -> None:
     """
     Runs 'ollama pull <model_name>' streaming output line-by-line and invoking progress_callback.
-    Uses UTF-8 encoding with character replacement to prevent Windows cp1252 decoding crashes.
     """
     ollama_cmd = get_ollama_executable() or "ollama"
     process = subprocess.Popen(
@@ -131,34 +130,46 @@ def pull_model(model_name: str, progress_callback=None) -> None:
 
 def ensure_ready(progress_callback=None) -> None:
     """
-    Orchestrates full readiness check:
-    1. Verifies Ollama is installed (raises clear error if missing)
-    2. Starts Ollama if not running
-    3. Ensures 'llama3.2:3b' and 'nomic-embed-text' are pulled
+    Orchestrates full 1-click readiness check:
+    1. Verifies Ollama is installed (runs bundled OllamaSetup.exe automatically if missing).
+    2. Starts Ollama background server.
+    3. Ensures required models ('llama3.2:3b', 'nomic-embed-text') are pulled automatically.
     """
     if progress_callback:
-        progress_callback("Checking Ollama installation...")
+        progress_callback("Checking local Ollama installation...")
 
     if not is_ollama_installed():
-        raise RuntimeError(
-            "Ollama is not installed or not found on PATH.\n"
-            "Please install Ollama from https://ollama.com or run the installer again."
-        )
+        # Check if OllamaSetup.exe exists in executable directory
+        exe_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.getcwd()
+        bundled_setup = os.path.join(exe_dir, "OllamaSetup.exe")
+
+        if os.path.exists(bundled_setup):
+            if progress_callback:
+                progress_callback("Ollama missing. Launching bundled Ollama installer...")
+            try:
+                subprocess.run([bundled_setup], check=True)
+            except Exception as e:
+                raise RuntimeError(f"Bundled Ollama setup failed: {e}")
+        else:
+            raise RuntimeError(
+                "Ollama is not installed on your system.\n"
+                "Please install Ollama from https://ollama.com before launching."
+            )
 
     if not is_ollama_running():
         if progress_callback:
-            progress_callback("Starting local Ollama server...")
+            progress_callback("Starting local Ollama background server...")
         start_ollama()
 
     required_models = ["llama3.2:3b", "nomic-embed-text"]
     for model in required_models:
         if not is_model_pulled(model):
             if progress_callback:
-                progress_callback(f"Downloading required model: {model} (this may take a few minutes on first run)...")
+                progress_callback(f"Downloading model '{model}' (first-run setup, please wait)...")
             pull_model(model, progress_callback=progress_callback)
         else:
             if progress_callback:
                 progress_callback(f"Model ready: {model}")
 
     if progress_callback:
-        progress_callback("All local AI services and models are ready!")
+        progress_callback("All local AI services ready! Launching app...")

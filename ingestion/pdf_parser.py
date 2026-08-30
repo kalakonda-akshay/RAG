@@ -3,28 +3,51 @@ Handles PDF text extraction using PyMuPDF with automatic OCR fallback for scanne
 """
 import os
 import shutil
-import pymupdf as fitz
-from PIL import Image
-import pytesseract
+import sys
 
-# Configure Tesseract binary path on Windows if needed
-if os.name == "nt":
-    common_paths = [
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-        os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"),
-    ]
-    if not shutil.which("tesseract"):
-        for path in common_paths:
-            if os.path.exists(path):
-                pytesseract.pytesseract.tesseract_cmd = path
-                break
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+try:
+    import pymupdf as fitz
+except ImportError:
+    try:
+        import fitz
+    except ImportError:
+        fitz = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+try:
+    import pytesseract
+    if os.name == "nt":
+        common_paths = [
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+            os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"),
+        ]
+        if not shutil.which("tesseract"):
+            for path in common_paths:
+                if os.path.exists(path):
+                    pytesseract.pytesseract.tesseract_cmd = path
+                    break
+except ImportError:
+    pytesseract = None
 
 
-def _ocr_page_pixmap(page: fitz.Page) -> str:
+def _ocr_page_pixmap(page) -> str:
     """
     Renders a PDF page to a high-resolution image and runs OCR via Tesseract.
     """
+    if Image is None or pytesseract is None:
+        return ""
     try:
         pix = page.get_pixmap(dpi=150)
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
@@ -42,6 +65,9 @@ def extract_text_from_pdf(file_path: str) -> list[dict]:
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
+
+    if fitz is None:
+        raise RuntimeError("PyMuPDF (fitz) library is not available. Please install pymupdf.")
 
     filename = os.path.basename(file_path)
     results = []

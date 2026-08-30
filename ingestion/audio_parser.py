@@ -2,14 +2,28 @@
 Handles audio transcription using faster-whisper with intelligent segment grouping.
 """
 import os
-from faster_whisper import WhisperModel
+import sys
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+try:
+    from faster_whisper import WhisperModel
+except ImportError:
+    WhisperModel = None
 
 # Global model instance loaded once at module level (lazy loaded on first reference)
 _whisper_model = None
 
 
-def _get_model() -> WhisperModel:
+def _get_model():
     global _whisper_model
+    if WhisperModel is None:
+        raise RuntimeError("faster_whisper library is not available. Please install faster-whisper.")
     if _whisper_model is None:
         # Load 'base' model on CPU with int8 quantization for high accuracy & fast offline execution
         _whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
