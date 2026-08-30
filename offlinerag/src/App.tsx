@@ -4,6 +4,7 @@ import Features from "./components/Features";
 import HowItWorks from "./components/HowItWorks";
 import Privacy from "./components/Privacy";
 import Screenshots from "./components/Screenshots";
+import UserGuide from "./components/UserGuide";
 import Download from "./components/Download";
 import GitHubSection from "./components/GitHubSection";
 import FAQ from "./components/FAQ";
@@ -19,6 +20,7 @@ export default function App() {
         <HowItWorks />
         <Privacy />
         <Screenshots />
+        <UserGuide />
         <Download />
         <GitHubSection />
         <FAQ />
