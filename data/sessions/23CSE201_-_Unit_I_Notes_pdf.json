@@ -1,0 +1,174 @@
+[
+  {
+    "role": "user",
+    "content": "hii"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! [1] The #include<stdio.h> header file is used for standard input-output. [2]",
+    "sources": [
+      {
+        "marker": "[1]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "48",
+        "type": "pdf"
+      },
+      {
+        "marker": "[2]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "39",
+        "type": "pdf"
+      },
+      {
+        "marker": "[3]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "20",
+        "type": "pdf"
+      },
+      {
+        "marker": "[4]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "65",
+        "type": "pdf"
+      },
+      {
+        "marker": "[5]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "45",
+        "type": "pdf"
+      }
+    ],
+    "graph": [
+      {
+        "source": "Compiler",
+        "relation": "Uses",
+        "target": "Standard input-output library"
+      },
+      {
+        "source": "IDE",
+        "relation": "Has",
+        "target": "Blink program code"
+      }
+    ],
+    "latency_sec": 6.180011987686157
+  },
+  {
+    "role": "user",
+    "content": "hii"
+  },
+  {
+    "role": "assistant",
+    "content": "The #include<stdio.h> header file is used for input/output operations, not standard input-output. It provides functions such as printf(), scanf(), and getchar() for reading and writing data to the console.",
+    "sources": [
+      {
+        "marker": "[1]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "48",
+        "type": "pdf"
+      },
+      {
+        "marker": "[2]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "39",
+        "type": "pdf"
+      },
+      {
+        "marker": "[3]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "20",
+        "type": "pdf"
+      },
+      {
+        "marker": "[4]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "65",
+        "type": "pdf"
+      },
+      {
+        "marker": "[5]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "45",
+        "type": "pdf"
+      }
+    ],
+    "graph": [
+      {
+        "source": "Program",
+        "relation": "Uses",
+        "target": "Header file"
+      },
+      {
+        "source": "Program",
+        "relation": "Contains",
+        "target": "Definition section"
+      },
+      {
+        "source": "Program",
+        "relation": "Includes",
+        "target": "Constant X"
+      },
+      {
+        "source": "IDE",
+        "relation": "Has",
+        "target": "Blink program code"
+      },
+      {
+        "source": "Blink program",
+        "relation": "Requires",
+        "target": "Pneumatic Actuators"
+      }
+    ],
+    "latency_sec": 1.5886807441711426
+  },
+  {
+    "role": "user",
+    "content": "who is founder os ardino"
+  },
+  {
+    "role": "assistant",
+    "content": "The Arduino project was founded by Massimo Banzi.",
+    "sources": [
+      {
+        "marker": "[1]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "31",
+        "type": "pdf"
+      },
+      {
+        "marker": "[2]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "22",
+        "type": "pdf"
+      },
+      {
+        "marker": "[3]",
+        "source": "23CSE201 - Unit I Notes.pdf",
+        "page": "32",
+        "type": "pdf"
+      }
+    ],
+    "graph": [
+      {
+        "source": "Arduino",
+        "relation": "Software",
+        "target": "https://www.arduino.cc/en/software/"
+      },
+      {
+        "source": "Arduino",
+        "relation": "Community",
+        "target": "Open-source community"
+      },
+      {
+        "source": "Arduino IDE",
+        "relation": "Extension boards",
+        "target": "Shields"
+      },
+      {
+        "source": "Arduino IDE",
+        "relation": "Installation",
+        "target": "Run"
+      }
+    ],
+    "latency_sec": 1.7885663509368896
+  }
+]
